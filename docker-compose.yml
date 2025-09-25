@@ -1,0 +1,67 @@
+networks:
+  sahdo-api-network:
+    driver: bridge
+    ipam:
+      driver: default
+
+services:
+  sahdo-api-nginx:
+    container_name: sahdo-api-nginx
+    image: nginx
+    ports:
+      - '${FORWARD_NGINX_PORT:-8080}:80'
+    depends_on:
+      - msg-crafter
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - sahdo-api-network
+
+  sahdo-api:
+    container_name: sahdo-api
+    build:
+      context: docker
+      dockerfile: app.Dockerfile
+      args:
+        USERID: ${USERID}
+        GROUPID: ${GROUPID}
+    command: php-fpm
+    volumes:
+      - ./src:/var/www
+    ports:
+      - '8080:80'
+    expose:
+      - '8080'
+    networks:
+      - sahdo-api-network
+    depends_on:
+      - sahdo-api-db
+      - sahdo-api-redis
+    environment:
+      - TZ=America/Sao_Paulo
+
+  sahdo-api-db:
+    container_name: sahdo-api-db
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: sahdo-api
+    ports:
+      - '3306:3306'
+    volumes:
+      - sahdo-api-db-volume:/var/lib/mysql
+    networks:
+      - sahdo-api-network
+
+  sahdo-api-redis:
+    container_name: sahdo-api-redis
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    networks:
+      - sahdo-api-network
+
+volumes:
+  sahdo-api-db-volume:
