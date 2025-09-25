@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="App\Domain\Entity\Post" table="posts">
+        <id name="id" type="string" column="id">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="title" type="string" column="title" length="255" nullable="false"/>
+        <field name="content" type="text" column="content" nullable="false"/>
+        <field name="slug" type="string" column="slug" length="255" nullable="false" unique="true"/>
+        <field name="publishedAt" type="datetime_immutable" column="published_at" nullable="false"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at" nullable="false"/>
+        <field name="updatedAt" type="datetime_immutable" column="updated_at" nullable="false"/>
+
+        <one-to-many field="comments" target-entity="App\Domain\Entity\Comment" mapped-by="post">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+
+        <one-to-many field="likes" target-entity="App\Domain\Entity\Like" mapped-by="post">
+            <cascade>
+                <cascade-persist/>
+                <cascade-remove/>
+            </cascade>
+        </one-to-many>
+    </entity>
+</doctrine-mapping>
